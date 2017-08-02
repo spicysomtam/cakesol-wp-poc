@@ -18,26 +18,36 @@ Obviously you need an AWS account, and to have created a key/secret pair in IAM 
 
 We want the latest ansible, rather than what ubuntu has, which is older, so lets add the ansible repo, update, and install it:
 
-`sudo apt-add-repository ppa:ansible/ansible`
-`sudo apt-get update`
-`sudo apt-get install ansible`
+```
+sudo apt-add-repository ppa:ansible/ansible
+sudo apt-get update`
+sudo apt-get install ansible
+```
 
 For good measure, lets get awscli up to date:
 
-`sudo pip install --upgrade awscli`
+```
+sudo pip install --upgrade awscli
+```
 
 Then install boto and boto3:
 
-`sudo pip install boto`
-`sudo pip install boto3`
+```
+sudo pip install boto
+sudo pip install boto3
+```
 
 Creating the ec2 instance (specify the ec2 iam key id and secret):
 
-`ansible-playbook -i127.0.0.1, -e "ec2key=x ec2secret=y" ansible/create-ec2-instance.yml`
+```
+ansible-playbook -i127.0.0.1, -e "ec2key=x ec2secret=y" ansible/create-ec2-instance.yml
+```
 
 Alternative, if specifying your own config file (with the ec2 iam key/secret in the file); can also include the vars above if the config key/secret is incorrect:
 
-`ansible-playbook -i127.0.0.1, -e "envconf=vars/dev-env.yml" ansible/create-ec2-instance.yml`
+```
+ansible-playbook -i127.0.0.1, -e "envconf=vars/dev-env.yml" ansible/create-ec2-instance.yml
+```
 
 # Docker and docker compose local dev setup
 
@@ -47,8 +57,12 @@ I used docker version 1.13.1 and docker-compose version 1.10.0. These are not th
 
 You will need to create an empty grafana dir, before running docker-compose. Then, to spin up the dev docker stack:
 
-`docker-compose up -d`
+```
+docker-compose up -d
+```
 
 To bring it down and remove containers:
 
-`docker-compose down`
+```
+docker-compose down
+```
