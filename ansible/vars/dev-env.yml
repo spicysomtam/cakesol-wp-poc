@@ -3,7 +3,7 @@ ec2key: x
 ec2secret: y
 ec2_region: eu-west-2
 instances_keypair: andy
-image_id: ami-996372fd
+image_id: ami-67908603
 env: development
 
 # security groups to be created
@@ -40,6 +40,6 @@ ec2_instances:
     keypair: "{{instances_keypair}}"
     group: ['default']
     instance_tags: 
-        Name: dev_host
+        Name: docker_wp_dev
     exact_count: 1
     count_tag: 1

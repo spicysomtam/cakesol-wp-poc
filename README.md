@@ -20,7 +20,7 @@ We want the latest ansible, rather than what ubuntu has, which is older, so lets
 
 ```
 sudo apt-add-repository ppa:ansible/ansible
-sudo apt-get update`
+sudo apt-get update
 sudo apt-get install ansible
 ```
 
@@ -37,23 +37,89 @@ sudo pip install boto
 sudo pip install boto3
 ```
 
-Creating the ec2 instance (specify the ec2 iam key id and secret):
+This step can be done by running 'getting-started.sh'
+
+# Creating the ec2 instance
+
+We will use a instance tag to refer to the ec2 instance, rather than an IP address when we configure it after its created. Ensure instance_tags->Name in ansible/vars/dev-env.yml (or the config file you use) is set to something unique and meaningful. Its currently set to docker_wp_dev. Note that hyphens get changes to underscores... 
+
+Then setup some env vars for your IAM key/secret; we need this later but might as well set it up now and then use the env vars:
 
 ```
-ansible-playbook -i127.0.0.1, -e "ec2key=x ec2secret=y" ansible/create-ec2-instance.yml
+export AWS_ACCESS_KEY_ID=y
+export AWS_SECRET_ACCESS_KEY=x
+```
+Run this to create the instance (specify the ec2 iam key id and secret):
+
+```
+ansible-playbook -i127.0.0.1, -e "ec2key=$AWS_ACCESS_KEY_ID ec2secret=$AWS_SECRET_ACCESS_KEY" ansible/create-ec2-instance.yml
 ```
 
-Alternative, if specifying your own config file (with the ec2 iam key/secret in the file); can also include the vars above if the config key/secret is incorrect:
+Alternative, if specifying your own config file:
 
 ```
 ansible-playbook -i127.0.0.1, -e "envconf=vars/dev-env.yml" ansible/create-ec2-instance.yml
 ```
 
+# Configuring the ec2 inventory
+
+Now we have a ec2 instance, we need to configure it. We need some magic to inventory what we have in our ec2 world and then choose the host via its tag to provision.
+
+Ansible has some tools for this. Lets get them:
+
+```
+cd ansible
+mkdir inventory
+cd inventory
+wget https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.py
+chmod u+x ec2.py
+wget https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.ini
+cd ../..
+```
+
+I suggest editing the ec2.ini and setting region in the ec2 block to the region where you provisioned against.
+
+
+And for the ec2 setup:
+
+```
+export ANSIBLE_HOSTS=ansible/inventory/ec2.py
+export EC2_INI_PATH=ansible/inventory/ec2.ini
+```
+
+Then you can list your ec2 inventory:
+
+```
+ansible/inventry/ec2.py --list
+
+```
+
+Then add the aws ssh priv key to the ssh keyring; something like this:
+
+```
+ssh-add ~/.ssh/aws-andy.pem
+```
+
+Finally test access, using the tag:
+
+```
+ansible -u ubuntu -m ping tag_Name_docker_wp_dev
+35.176.159.213 | SUCCESS => {
+    "changed": false, 
+    "ping": "pong"
+}
+```
+
+If it complains that /usr/bin/python cannot be found, welcome to later versions of ubuntu with no python! See this for a work around: https://gist.github.com/gwillem/4ba393dceb55e5ae276a87300f6b8e6f
+Use ubuntu 14.04 as recommended :)
+
+From now we can refer to the host as tag_Name_docker_wp_dev when running ansible. Also the same tag can be used on more than one instance, in which case ansible will apply changes to all instances referred via the tag.
+
 # Docker and docker compose local dev setup
 
-Install docker-engine from docker.io (not ubuntu repo) and docker-compose.  These should be resonably recent releases as the technology is changing fast.
+Install docker-engine from docker.io (not ubuntu repo) and docker-compose.  These should be reasonably recent releases as the technology is changing fast.
 
-I used docker version 1.13.1 and docker-compose version 1.10.0. These are not the most recent versions and I am reluctant to upgrade to the latest due to the docker versioning changing (which broke kubernetes/openshift so I locked my versions to docker 1.13.1).
+I used docker version 1.13.1 and docker-compose version 1.10.0. These are not the most recent versions and I don't want to upgrade to the latest due to the docker versioning changes (which broke kubernetes/openshift so I locked my versions to docker 1.13.1 in apt).
 
 You will need to create an empty grafana dir, before running docker-compose. Then, to spin up the dev docker stack:
 
