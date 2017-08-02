@@ -18,9 +18,9 @@ Obviously you need an AWS account, and to have created a key/secret pair in IAM 
 
 We want the latest ansible, rather than what ubuntu has, which is older, so lets add the ansible repo, update, and install it:
 
-`sudo apt-add-repository ppa:ansible/ansible
-sudo apt-get update
-sudo apt-get install ansible`
+`sudo apt-add-repository ppa:ansible/ansible`
+`sudo apt-get update`
+`sudo apt-get install ansible`
 
 For good measure, lets get awscli up to date:
 
@@ -28,8 +28,8 @@ For good measure, lets get awscli up to date:
 
 Then install boto and boto3:
 
-`sudo pip install boto
-sudo pip install boto3`
+`sudo pip install boto`
+`sudo pip install boto3`
 
 Creating the ec2 instance (specify the ec2 iam key id and secret):
 
