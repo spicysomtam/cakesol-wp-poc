@@ -3,6 +3,7 @@
 
 - vars:
     - docker_ver: "docker-engine=1.13.1-0~ubuntu-trusty"
+    - dc_ver: 1.9.0
     - docker_apt_key: 2C52609D
 
   name: Provision ec2 instance
@@ -37,3 +38,57 @@
     service:
       name: docker
       state: started
+
+  - name: install pip
+    apt:
+      name: python-pip
+      state: present
+
+  - name: check for docker-compose
+    shell: pip show docker-compose|grep Version
+    register: result
+    ignore_errors: True
+
+#  - name: install docker-compose {{ dc_ver }}
+#    shell: curl -L https://github.com/docker/compose/releases/download/{{ dc_ver }}/docker-compose-Linux-x86_64 > /usr/local/bin/docker-compose; chmod +x /usr/local/bin/docker-compose
+#    when: result|failed
+
+  - name: pip install docker-compose
+    command: pip install docker-compose=="{{ dc_ver }}"
+    when: result|failed
+
+  - name: deploy docker-compose config
+    docker_service:
+      project_name: wordpress
+      definition:
+        version: "2"
+        services:
+          wordpress:
+            image: wordpress
+            container_name: wordpress
+            expose:
+              - 80
+            ports:
+             - "80:80"
+            environment:
+              - WORDPRESS_DB_PASSWORD=example
+            depends_on:
+              - mysql
+          mysql:
+            image: mariadb
+            container_name: mysql
+            environment:
+              - MYSQL_ROOT_PASSWORD=example
+          cadvisor:
+            image: google/cadvisor:latest
+            container_name: cadvisor
+            expose:
+              - 8080
+            ports:
+              - "8080:8080"
+            volumes:
+              - /:/rootfs:ro
+              - /var/run:/var/run:rw
+              - /sys:/sys:ro
+              - /var/lib/docker/:/var/lib/docker:ro
+    register: output

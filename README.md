@@ -113,15 +113,21 @@ Use ubuntu 14.04 as recommended :)
 
 This is somewhat different from creating it, as that step talked to the aws infrastructure. Now we need to ssh into the host to do configuration, and this needs a different ansible setup. Hence its a seperate task.
 
-It sets up the docker.io apt repo/key (older versions; not CC or EE releases), installs docker-engine, and ensures the docker service is running.
+It sets up the docker.io apt repo/key (older versions; not CC or EE releases), installs docker-engine, ensures the docker service is running, sets up docker-compose and then spins up the containers using that.
 
-Configuring the ec2 instance using the tag:
+Provisioning the ec2 instance using the tag:
 
 ```
 ansible-playbook -i ansible/ec2.py --limit tag_Name_dev_docker_wp ansible/provision-ec2-instance.yml
 ```
 
 You can run 'provision-ec2-instance.sh' script for this step.
+
+# Docker on the ec2 instance
+
+I did consider allowing remote requests to the docker daemon from the dev workstation, but this is horribly insecure (I could setup tls, etc, but that just adds more effort). For example I could run docker-compose on the dev workstation where it executes it on the ec2 instance. So I keep it simple, and copy over a docker-compose.yml file to the ec2 instance, and then run it there using ansible.
+
+Then I discovered ansible can do docker compose for us. To I added the ec2 compose provisioning to the ec2 provision playbook.
 
 # Docker and docker compose local dev setup
 
