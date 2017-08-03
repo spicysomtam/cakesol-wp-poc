@@ -1,33 +1,30 @@
 ---
 ec2key: x
 ec2secret: y
-ec2_region: eu-west-2
+# ec2_region: eu-west-2 # London 
+ec2_region: eu-west-1 # Dublin
 instances_keypair: andy
-image_id: ami-67908603
+#image_id: ami-66051402 # ub14.04.5 in eu-west-2
+image_id: ami-1e749f67 # ub14.04.5 in eu-west-1
+#image_id: ami-996372fd # ub16.04 in eu-west-2
+#image_id: ami-785db401 # ub16.04 in eu-west-1
 env: development
 
 # security groups to be created
 security_groups:
-  - name: ssh
-    desc: the security group for the jumphost
+  - name: docker
+    desc: security group for ec2/docker/containers
     rules:
       - proto: tcp
         from_port: 22
         to_port: 22
         cidr_ip: 0.0.0.0/0
+    rules_egress:
+      - proto: all
+        from_port: 0 
+        to_port: 65535
+        cidr_ip: 0.0.0.0/0
 
-  - name: web
-    desc: the security group for the web server 
-    rules:
-      - proto: tcp
-        from_port: "80"
-        to_port: "80"
-        cidr_ip: 0.0.0.0/0
-      - proto: tcp
-        from_port: "443"
-        to_port: "443"
-        cidr_ip: 0.0.0.0/0
-  
 # Instances to launch be launched.
 # If you re-run the playbook after modifying exact_count,
 # instances will be terminated if the actual count > exact_count,
@@ -38,8 +35,8 @@ ec2_instances:
     image: "{{ image_id }}"
     assign_public_ip: true
     keypair: "{{instances_keypair}}"
-    group: ['default']
+    group: ['docker']
     instance_tags: 
-        Name: docker_wp_dev
+        Name: dev_docker_wp
     exact_count: 1
     count_tag: 1

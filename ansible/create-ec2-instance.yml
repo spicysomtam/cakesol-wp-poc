@@ -11,7 +11,18 @@
 
 
   tasks:
-  - name: Launch or start instance
+  - name: Create required security group/s
+    ec2_group:
+      name: "{{ item.name }}"
+      description: "{{ item.desc }}"
+      rules: "{{ item.rules }}"
+      rules_egress: "{{ item.rules_egress }}"
+      region: "{{ ec2_region }}"
+      ec2_access_key: "{{ ec2key }}"
+      ec2_secret_key: "{{ ec2secret }}"
+    with_items: "{{ security_groups }}"
+
+  - name: Launch or start instance/s
     ec2: 
       region: "{{ ec2_region }}"
       ec2_access_key: "{{ ec2key }}"
