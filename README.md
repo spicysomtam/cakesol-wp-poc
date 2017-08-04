@@ -10,7 +10,7 @@ The EC2 instance will be provisioned via ansible. Then ansible will install dock
 
 Finally there is the integration of the local docker setup with the remote EC2 instance config, and some tweaking of grafana to produce meaningful dashboards. The monitoring config needs to know what to scrape, and the ec2 security group needs to have the right ports open to allow this, etc. Prometheus ec2 discovery could be used, but I had something already discovering the ec2 setup, so I used that.
 
-I was thing aws ecs would have been much better than using an ec2 instance and then putting docker on it. But it provides a useful exercise in orchestrating it.
+I was thinking aws ecs would have been much better than using an ec2 instance and then putting docker on it. But it provides a useful exercise in orchestrating it.
 
 I am of the view you keep things as simple and clean as possible. Thus I have tried to use prebuilt docker images, reuse what is available and keep manual config to a minimum. Ansible playbooks could be better implemented and written as roles (as I have done before). However this is a poc, and time is of the essence, so I needed to get something up and running that can be reliably recreated.
 
