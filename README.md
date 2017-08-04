@@ -2,15 +2,15 @@
 
 cake-sol-test-wordpress-prometheus-grafana.md advises what is to be built.
 
-The monitoring setup uses docker via docker-compose, which orchestrates all the containers, on you development workstation. This would be prometheus and grafana. The monitoring setup would then scrape stats from the EC2 instance and cadvisor running inside docker running on this instance.
+My development workstation is ubuntu 16.04 LTS so this setup runs on this. 
+
+The monitoring setup uses docker via docker-compose, which orchestrates all the containers, on your development workstation. This would be prometheus and grafana. The monitoring setup then scrapes stats from the EC2 instance and cadvisor running inside docker running on this instance.
 
 The EC2 instance will be provisioned via ansible. Then ansible will install docker on it, along with prometheus node exporter, wordpress, marinadb and cadvisor containers deployed in docker. 
 
-Finally there is the integration of the local docker setup with the remote EC2 instance config, and some tweaking of grafana to produce meaningful dashboards. The monitoring config needs to know what to scrape, and the ec2 security group needs to have the right ports open to allow this, etc. Prometheus ec2 discovery could be used, but I had something that already discovered the ec2 setup, so I used that.
+Finally there is the integration of the local docker setup with the remote EC2 instance config, and some tweaking of grafana to produce meaningful dashboards. The monitoring config needs to know what to scrape, and the ec2 security group needs to have the right ports open to allow this, etc. Prometheus ec2 discovery could be used, but I had something already discovering the ec2 setup, so I used that.
 
-My development workstation is ubuntu 16.04 LTS so this setup runs on this. 
-
-I am of the view you keep things as simple and clean as possible. Thus I have tried to use prebuilt docker images, reuse what is available and keep manual config to a minimum. Ansible playbooks could be better implemented and written as roles (as I have done before). However this is a poc, and time is of essence to get something up and running that can be reliably reproduced.
+I am of the view you keep things as simple and clean as possible. Thus I have tried to use prebuilt docker images, reuse what is available and keep manual config to a minimum. Ansible playbooks could be better implemented and written as roles (as I have done before). However this is a poc, and time is of the essence, so I needed to get something up and running that can be reliably recreated.
 
 # Ansible AWS setup
 
@@ -18,15 +18,18 @@ We can provision aws services using ansible, as it has built in playbooks for th
 
 Obviously you need an AWS account, and to have created a key/secret pair in IAM so you can use aws cli (with AdministratorAccess priv via a group).
 
-This step can be done by running 'getting-started.sh'
+You will need to do all the aws access/iam setup in the web ec2 console. The local setup on the dev workstation is done as follows:
+```
+./getting-started.sh
+```
 
 # Configuring the ec2 inventory
 
 We need some magic to inventory what we have in our ec2 world and then choose the host via a tag rather than its ip address to provision.
 
-Ansible has some tools for this. ec2.py/ec2.ini, which I installed in the ansible subdir.
+Ansible has some tools for this. ec2.py/ec2.ini, which is already installed in the ansible subdir.
 
-We implement the IAM key/secret as env vars as this is more secure than saving it in config files (that may get commited to git):
+We implement the IAM key/secret as env vars as this is more secure than saving it in config files, which may get accidentally commited to git!:
 
 ```
 export AWS_ACCESS_KEY_ID=y
@@ -37,16 +40,18 @@ I suggest editing the ec2.ini and setting region in the ec2 block to the region 
 
 Then source 'inventory.sh':
 
+```
 . ./inventory.sh
+```
 
 Then you can list your ec2 inventory:
 
 ```
 ansible/ec2.py --list
-
 ```
+Note that ec2.py caches locally, so you can force a refresh to ec2 using the --refresh-cache arg.
 
-You should have a aws key par setup to allow ssh access to your ec2 instances. If you don't have one, go and set one up, and save the priv key somewhere on your workstation. Then add the aws ssh priv key to the ssh keyring; something like this:
+You should have a aws key par setup to allow ssh access to your ec2 instances. If you don't have one, go and set one up via the web ec2 console, and save the priv key somewhere on your workstation. Then add the aws ssh priv key to the ssh keyring; something like this:
 
 ```
 ssh-add ~/.ssh/aws-andy.pem
@@ -56,7 +61,7 @@ From now we can refer to the host as tag_Name_dev_docker_wp when running ansible
 
 # Creating the ec2 instance
 
-We will use a instance tag to refer to the ec2 instance, rather than an IP address. Ensure instance_tags->Name in ansible/vars/dev-env.yml (or the config file you use) is set to something unique and meaningful. Its currently set to dev_docker_wp. Note that hyphens get changes to underscores... 
+We will use a instance tag to refer to the ec2 instance, rather than an IP address. Ensure instance_tags->Name in ansible/vars/dev-env.yml (or the config file you use) is set to something unique and meaningful. Its currently set to dev_docker_wp. Note that hyphens get changed to underscores... 
 
 Run this to create the instance; this can be run again and again and it will maintain state until you terminate the instance:
 
@@ -86,18 +91,15 @@ Provisioning the ec2 instance using the tag; again this maintains state so can b
 ./provision-ec2-instance.sh
 ```
 
-
 # Docker on the ec2 instance
 
-I did consider allowing remote requests to the docker daemon from the dev workstation, but this is horribly insecure (I could setup tls, etc, but that just adds more effort). For example I could run docker-compose on the dev workstation where it executes it on the ec2 instance. So I keep it simple, and copy over a docker-compose.yml file to the ec2 instance, and then run it there using ansible.
-
-Then I discovered ansible can do docker compose for us. To I added the ec2 compose provisioning to the ec2 provision playbook.
+I discovered ansible can do docker compose for us. So I added the ec2 compose provisioning to the ec2 provision playbook. It also maintains state so can be re-run, etc.
 
 # Docker and docker compose local dev setup
 
 Install docker-engine from docker.io (not ubuntu repo) and docker-compose. I used non CE/EE versions.
 
-This setup will also works out what ip addresses to use for the ec2 instance and cadvisor running on the instance. Prometheus config will be updated accordingly. Grafana is already populate with some dashboards.
+This step works out what ip addresses to use for the ec2 instance/s and cadvisor running on the instance/s, and then spins up the local dev docker compose setup. Prometheus config will be updated accordingly. Grafana is already populate with some dashboards:
 
 ```
 ./docker-dev-start.sh
