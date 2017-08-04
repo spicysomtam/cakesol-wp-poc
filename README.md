@@ -2,7 +2,7 @@
 
 cake-sol-test-wordpress-prometheus-grafana.md advises what is to be built.
 
-My development workstation is ubuntu 16.04 LTS so this setup runs on this. 
+My development workstation (laptop) is ubuntu 16.04 LTS so this setup runs on this. Actually its Mint 18.2 which I use as my desktop.
 
 The monitoring setup uses docker via docker-compose, which orchestrates all the containers, on your development workstation. This would be prometheus and grafana. The monitoring setup then scrapes stats from the EC2 instance and cadvisor running inside docker running on this instance.
 
@@ -97,9 +97,9 @@ I discovered ansible can do docker compose for us. So I added the ec2 compose pr
 
 # Docker and docker compose local dev setup
 
-Install docker-engine from docker.io (not ubuntu repo) and docker-compose. I used non CE/EE versions.
+Install docker-engine from docker.io (not ubuntu repo) and docker-compose on your dev workstation. I used non CE/EE versions which were already installed.
 
-This step works out what ip addresses to use for the ec2 instance/s and cadvisor running on the instance/s, and then spins up the local dev docker compose setup. Prometheus config will be updated accordingly. Grafana is already populate with some dashboards:
+This step works out what ip addresses to use for the ec2 instance/s and cadvisor running on the instance/s (uses ec2.py), and then spins up the local dev docker compose setup. Prometheus config will be updated accordingly. Grafana is already populate with some dashboards:
 
 ```
 ./docker-dev-start.sh
@@ -124,7 +124,7 @@ The dashboards I found later on in the development process from here: https://gi
 
 Prometheus is exposed at http://localhost:9090. You can click on Status->Targets to see what is being scraped.
 
-You can use ./ansible/ec.py to get the ec2 instance public ip. From that you can connect to the containers running on it:
+You can use ./ansible/ec2.py to get the ec2 instance public ip. From that you can connect to the containers running on it:
 
  - http://<pub-ip> - Will get you to Wordpress, which needs a bit more work getting it installed (it does have a connection to a marinadb). Good enough for the poc I think.
  - http://<pub-ip>:8080 - cadvisor. Add /metrics to the url to get the metrics.
@@ -133,8 +133,8 @@ You can use ./ansible/ec.py to get the ec2 instance public ip. From that you can
 I think its in a state I am happy to release, but there is much scope for improvement.
 
 To do (priority in order below):
- - Improve some of the ansible errors, which I am not happy with.
- - Get the prometheus ec2 discovery working (quick setup did not work).
- - Setup the wordpress better.
- - Learn more about prometheus and get it to display nodes, etc, and setup some graphs. Documentation is a little sparse.
- - Look at prometheus storage, so collected data is not lost when the containers are destroyed (docker volume). Appreciate data is time series and it gets overwritten.
+ - Improve the ansible code.
+ - Get the prometheus ec2 discovery working (quick setup did not work for me).
+ - Complete the wordpress setup.
+ - Learn more about prometheus and get it to display nodes, etc, and setup some graphs. Documentation is a little sparse IMHO.
+ - Look at prometheus storage, so collected data is not lost when the containers are destroyed (docker volume). Appreciate data is time series and it gets overwritten, but it would be nice to maintain its state.
