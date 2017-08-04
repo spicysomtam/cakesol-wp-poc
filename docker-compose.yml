@@ -3,8 +3,8 @@ version: '3'
 services:
   prometheus:
     image: prom/prometheus:latest
-    depends_on:
-      - cadvisor
+#    depends_on:
+#      - cadvisor
     container_name: prometheus
     expose:
       - 9090
@@ -13,18 +13,18 @@ services:
     volumes:
       - ./prometheus/:/etc/prometheus/
 
-  cadvisor:
-    image: google/cadvisor:latest
-    container_name: cadvisor
-    expose:
-      - 8080
-    ports:
-      - "8080:8080"
-    volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:rw
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
+#  cadvisor:
+#    image: google/cadvisor:latest
+#    container_name: cadvisor
+#    expose:
+#      - 8080
+#    ports:
+#      - "8080:8080"
+#    volumes:
+#      - /:/rootfs:ro
+#      - /var/run:/var/run:rw
+#      - /sys:/sys:ro
+#      - /var/lib/docker/:/var/lib/docker:ro
 
   grafana:
     image: grafana/grafana

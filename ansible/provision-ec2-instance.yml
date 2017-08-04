@@ -4,7 +4,10 @@
 - vars:
     - docker_ver: "docker-engine=1.13.1-0~ubuntu-trusty"
     - dc_ver: 1.9.0
+    - node_exp_ver: 0.14.0
     - docker_apt_key: 2C52609D
+    - prometheus_root: /opt/prometheus
+    - prometheus_cfg: /etc/prometheus
 
   name: Provision ec2 instance
   hosts: all
@@ -39,6 +42,43 @@
       name: docker
       state: started
 
+  - name: create prometheus directory structure
+    file: >
+      state=directory
+      path={{ item }}
+      owner=root
+      group=root
+    with_items:
+    - "{{ prometheus_cfg }}"
+    - "{{ prometheus_root }}"
+    - "{{ prometheus_root }}/dist"
+    - "{{ prometheus_root }}/bin"
+
+  - stat: path={{ prometheus_root }}/dist/node_exporter-{{node_exp_ver}}.linux-amd64.tar.gz
+    register: node_exp_tar_gz
+
+  - name: install prometheus node_exporter from tar.gz
+    raw: >
+      cd {{ prometheus_root }}/dist;
+      wget https://github.com/prometheus/node_exporter/releases/download/v{{node_exp_ver}}/node_exporter-{{node_exp_ver}}.linux-amd64.tar.gz;
+      tar xfvz node_exporter-{{node_exp_ver}}.linux-amd64.tar.gz;
+      mv node_exporter-{{node_exp_ver}}.linux-amd64/node_exporter {{ prometheus_root }}/bin/;
+      rm -rf node_exporter-{{node_exp_ver}}.linux-amd64;
+    when: node_exp_tar_gz.stat.exists == False
+
+  - name: create node_exporter upstart init file
+    template: >
+      src={{ item }}.j2
+      dest=/etc/init/{{ item }}
+    with_items:
+      - prometheus_node_exporter.conf
+
+  - name: start node-exporter
+    service: 
+      name=prometheus_node_exporter 
+      state=started 
+      enabled=yes
+
   - name: install pip
     apt:
       name: python-pip
@@ -48,10 +88,6 @@
     shell: pip show docker-compose|grep Version
     register: result
     ignore_errors: True
-
-#  - name: install docker-compose {{ dc_ver }}
-#    shell: curl -L https://github.com/docker/compose/releases/download/{{ dc_ver }}/docker-compose-Linux-x86_64 > /usr/local/bin/docker-compose; chmod +x /usr/local/bin/docker-compose
-#    when: result|failed
 
   - name: pip install docker-compose
     command: pip install docker-compose=="{{ dc_ver }}"
