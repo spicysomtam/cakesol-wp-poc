@@ -99,11 +99,13 @@ I discovered ansible can do docker compose for us. So I added the ec2 compose pr
 
 # Docker and docker compose local dev setup
 
-Install docker-engine from docker.io (not ubuntu repo) and docker-compose on your dev workstation. I used non CE/EE versions which were already installed.
+Install docker-engine from docker.io (not ubuntu repo) and docker-compose on your dev workstation. I used non CE/EE versions which were already installed. I created a script for doing the full install, that works on Ubuntu 16.04/Mint 18.x. I suggest you check the script before running it:
 
-This step works out what ip addresses to use for the ec2 instance/s and cadvisor running on the instance/s (uses ec2.py), and then spins up the local dev docker compose setup. Prometheus config will be updated accordingly. Grafana is already populate with some dashboards. Prometheus ec2 discovery is also configured; its using the public ip of the ec2 instance and appends the node exporter port. 
+```
+./docker-local-install.sh
+```
 
-Starting up the docker config:
+This step works out what ip addresses to use for the ec2 instance/s and cadvisor running on the instance/s (uses ec2.py), and then spins up the local dev docker compose setup. Prometheus config will be updated accordingly. Grafana is already populate with some dashboards. Prometheus ec2 discovery is also configured; its using the public ip of the ec2 instance and appends the node exporter port. Starting up the docker config:
 
 ```
 ./docker-dev-start.sh
