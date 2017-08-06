@@ -24,6 +24,7 @@
   - name: check for docker.io apt key {{ docker_apt_key }}
     shell: apt-key list |grep -q {{ docker_apt_key }}
     register: result
+    changed_when: False
     ignore_errors: True
 
 #   Can't use apt-key because ub is missing python libraries...
@@ -87,6 +88,7 @@
   - name: check for docker-compose
     shell: pip show docker-compose|grep Version
     register: result
+    changed_when: False
     ignore_errors: True
 
   - name: pip install docker-compose

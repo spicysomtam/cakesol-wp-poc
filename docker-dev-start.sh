@@ -28,13 +28,15 @@ cat << EOF >> prometheus/prometheus.yml
         secret_key: "$AWS_SECRET_ACCESS_KEY"
         port: 9100
     relabel_configs:
-        # Only monitor instances with a Name starting with "SD Demo"
-      - source_labels: [__meta_ec2_tag_Name]
-        regex: .*
-        action: keep
-        # Use the instance ID as the instance label
-      - source_labels: [__meta_ec2_instance_id]
-        target_label: instance
+      - source_labels: [__meta_ec2_public_ip]
+        target_label: __address__
+#      - source_labels: [__address__]
+#        action: replace
+#        regex: (.+):(?:\d+)
+#        replacement: ${1}:9100
+#        target_label: __address__
 EOF
+
+[ ! -d prometheus-data ] && mkdir prometheus-data
 
 docker-compose up -d

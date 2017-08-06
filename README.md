@@ -128,15 +128,13 @@ Prometheus is exposed at http://localhost:9090. You can click on Status->Targets
 
 You can use ./ansible/ec2.py to get the ec2 instance public ip. From that you can connect to the containers running on it:
 
- - http://<pub-ip> - Will get you to Wordpress, which needs a bit more work getting it installed (it does have a connection to a marinadb). Good enough for the poc I think.
- - http://<pub-ip>:8080 - cadvisor. Add /metrics to the url to get the metrics.
- - http://<pub-ip>:9100/metrics - node exporter metrics
+ - http://pub-ip - Will get you to Wordpress, which needs a bit more work getting it installed (it does have a connection to a marinadb). Good enough for the poc I think.
+ - http://pub-ip:8080 - cadvisor. Add /metrics to the url to get the metrics.
+ - http://pub-ip:9100/metrics - node exporter metrics
 
-I think its in a state I am happy to release, but there is much scope for improvement.
+I think its in a state I am happy to release, but there is scope for improvement.
 
 To do (priority in order below):
- - Improve the ansible code.
- - Get the prometheus ec2 discovery working (quick setup did not work for me).
+ - Get the prometheus ec2 discovery working; its getting the public ip of the ec2 instance, but I can't get the port rewrite to work.
  - Complete the wordpress setup.
  - Learn more about prometheus and get it to display nodes, etc, and setup some graphs. Documentation is a little sparse IMHO.
- - Look at prometheus storage, so collected data is not lost when the containers are destroyed (docker volume). Appreciate data is time series and it gets overwritten, but it would be nice to maintain its state.
