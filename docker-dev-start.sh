@@ -29,12 +29,8 @@ cat << EOF >> prometheus/prometheus.yml
         port: 9100
     relabel_configs:
       - source_labels: [__meta_ec2_public_ip]
+        replacement: \${1}:9100
         target_label: __address__
-#      - source_labels: [__address__]
-#        action: replace
-#        regex: (.+):(?:\d+)
-#        replacement: ${1}:9100
-#        target_label: __address__
 EOF
 
 [ ! -d prometheus-data ] && mkdir prometheus-data

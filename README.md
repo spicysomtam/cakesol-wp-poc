@@ -101,7 +101,9 @@ I discovered ansible can do docker compose for us. So I added the ec2 compose pr
 
 Install docker-engine from docker.io (not ubuntu repo) and docker-compose on your dev workstation. I used non CE/EE versions which were already installed.
 
-This step works out what ip addresses to use for the ec2 instance/s and cadvisor running on the instance/s (uses ec2.py), and then spins up the local dev docker compose setup. Prometheus config will be updated accordingly. Grafana is already populate with some dashboards:
+This step works out what ip addresses to use for the ec2 instance/s and cadvisor running on the instance/s (uses ec2.py), and then spins up the local dev docker compose setup. Prometheus config will be updated accordingly. Grafana is already populate with some dashboards. Prometheus ec2 discovery is also configured; its using the public ip of the ec2 instance and appends the node exporter port. 
+
+Starting up the docker config:
 
 ```
 ./docker-dev-start.sh
@@ -135,6 +137,5 @@ You can use ./ansible/ec2.py to get the ec2 instance public ip. From that you ca
 I think its in a state I am happy to release, but there is scope for improvement.
 
 To do (priority in order below):
- - Get the prometheus ec2 discovery working; its getting the public ip of the ec2 instance, but I can't get the port rewrite to work.
  - Complete the wordpress setup.
  - Learn more about prometheus and get it to display nodes, etc, and setup some graphs. Documentation is a little sparse IMHO.
