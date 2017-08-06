@@ -136,6 +136,9 @@ You can use ./ansible/ec2.py to get the ec2 instance public ip. From that you ca
 
 I think its in a state I am happy to release, but there is scope for improvement.
 
-To do (priority in order below):
+# To do
+
+Priority in order below:
+
  - Complete the wordpress setup.
  - Learn more about prometheus and get it to display nodes, etc, and setup some graphs. Documentation is a little sparse IMHO.
